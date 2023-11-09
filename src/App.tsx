@@ -1,12 +1,18 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 
-import { Box, Container, LinearProgress } from '@mui/material';
+import { useEditData } from '@hooks/useEditData';
+import { usePostsData } from '@hooks/usePostsData';
+import { Box, Container } from '@mui/material';
 
+import { LoadingProgress } from '@components/atoms/LoadingProgress/LoadingProgress';
+import { ActionsSection } from '@components/organisms/ActionsSection';
 import { Table } from '@components/organisms/Table';
 import { SortBy } from '@components/organisms/Table/constants';
-import { ActionsSection } from 'src/components/organisms/ActionsSection';
 
-import { usePostsData } from './hooks/usePostsData';
+import { SinglePostType } from './services/types';
+
+import { sortTable } from '@utils/sortTable';
+
 import type { SortChangeHandlerType, SortType } from './types';
 
 const initialStates = {
@@ -24,6 +30,20 @@ function App() {
   );
 
   const { posts, isLoading } = usePostsData();
+  const { mutate, isPending } = useEditData();
+
+  const handleEdit = (id: number, data: Partial<SinglePostType>) => {
+    mutate({ postId: id, payload: data });
+  };
+
+  const handleSortBy: SortChangeHandlerType = (value: SortType) => {
+    setSortColumn(prevState => ({ ...prevState, ...value }));
+  };
+
+  const handleResetActions = () => {
+    setFilterTitle(initialStates.filterTitle);
+    setSortColumn(initialStates.sortColumn);
+  };
 
   const filteredTitle = useMemo(() => {
     if (posts.length) {
@@ -39,38 +59,11 @@ function App() {
     const { sortBy } = sortColumn;
 
     if (sortBy) {
-      return filteredTitle.toSorted((a, b) => {
-        const { sortBy, sortAsc } = sortColumn;
-
-        const [valA, valB] = sortAsc ? [a, b] : [b, a];
-
-        switch (sortBy) {
-          case SortBy.TITLE:
-            return valA.title.localeCompare(valB.title);
-
-          case SortBy.BODY:
-            return valA.body.localeCompare(valB.body);
-
-          case SortBy.USER_ID:
-            return valA.userId > valB.userId ? 1 : -1;
-
-          default:
-            return 1;
-        }
-      });
+      return sortTable(filteredTitle, sortColumn);
     } else {
       return filteredTitle;
     }
   }, [filteredTitle, sortColumn]);
-
-  const handleSortBy: SortChangeHandlerType = (value: SortType) => {
-    setSortColumn(prevState => ({ ...prevState, ...value }));
-  };
-
-  const handleResetActions = () => {
-    setFilterTitle(initialStates.filterTitle);
-    setSortColumn(initialStates.sortColumn);
-  };
 
   return (
     <Container maxWidth="xl" disableGutters>
@@ -82,7 +75,9 @@ function App() {
           onSortChange={handleSortBy}
           onFilterChange={setFilterTitle}
         />
-        {isLoading ? <LinearProgress /> : <Table data={sortedData} />}
+
+        {(isLoading || isPending) && <LoadingProgress />}
+        <Table data={sortedData} onEdit={handleEdit} />
       </Box>
     </Container>
   );

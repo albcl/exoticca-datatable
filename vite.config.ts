@@ -13,10 +13,17 @@ export default defineConfig({
       '@components': path.resolve(__dirname, './src/components'),
       '@services': path.resolve(__dirname, './src/services'),
       '@hooks': path.resolve(__dirname, './src/hooks'),
-      '@errors': path.resolve(__dirname, './src/errors')
+      '@errors': path.resolve(__dirname, './src/errors'),
+      '@utils': path.resolve(__dirname, './src/utils'),
+      '@mocks': path.resolve(__dirname, './src/__mocks__')
     }
   },
   test: {
-    environment: 'happy-dom'
+    environment: 'happy-dom',
+    setupFiles: ['./src/setupTests.ts'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html']
+    }
   }
 });

@@ -16,7 +16,7 @@ import {
 import {
   SortBy,
   TABLE_HEADER_LABELS
-} from 'src/components/organisms/Table/constants';
+} from '@components/organisms/Table/constants';
 
 import type { SortsSectionProps } from './types';
 
@@ -25,6 +25,8 @@ const sortByItems = [
   { id: SortBy.TITLE, label: TABLE_HEADER_LABELS[SortBy.TITLE] },
   { id: SortBy.BODY, label: TABLE_HEADER_LABELS[SortBy.BODY] }
 ];
+
+export const sortByDataTestID = 'sort-by';
 export function SortsSection({
   minWidth,
   sortBy,
@@ -50,6 +52,7 @@ export function SortsSection({
       <FormControl>
         <InputLabel htmlFor="select-sort">Sorty by</InputLabel>
         <Select
+          data-testid={sortByDataTestID}
           variant="outlined"
           sx={{ minWidth }}
           id="select-sort"
@@ -75,7 +78,7 @@ export function SortsSection({
             control={
               <Switch
                 disabled={!sortBy}
-                defaultChecked
+                checked={sortAsc}
                 onChange={toggleOrder}
               />
             }

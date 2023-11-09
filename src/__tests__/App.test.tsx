@@ -1,11 +1,20 @@
-import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
+import mockData from '@mocks/data.json';
+import {
+  cleanup,
+  fireEvent,
+  screen,
+  waitFor,
+  within
+} from '@testing-library/react';
 import App from 'src/App';
 import { renderWithQuery } from 'src/testUtils';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
-import { dataTestID } from '@components/organisms/Table';
-
-import { postsURL } from 'src/services/api';
+import { dataTestID } from 'src/components/organisms/Table';
+import {
+  SortBy,
+  TABLE_HEADER_LABELS
+} from 'src/components/organisms/Table/constants';
 
 describe('App', () => {
   afterEach(() => {
@@ -13,150 +22,79 @@ describe('App', () => {
   });
 
   it('should render fine', async () => {
-    const response = [
-      {
-        userId: 1,
-        id: 1,
-        title: 'Lorem ipsum',
-        body: 'recusandae consequuntur expedita'
-      }
-    ];
-
-    const fetchCall = vi
-      .spyOn(window, 'fetch')
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      .mockResolvedValue({
-        ok: true,
-        json: async () => response
-      } as Response);
-
     renderWithQuery(<App />);
 
-    expect(fetchCall).toHaveBeenCalledWith(postsURL);
-
     await waitFor(() => {
-      const title = screen.getByText(response[0].title);
+      const title = screen.getByDisplayValue(mockData[0].title);
       expect(title).toBeDefined();
       expect(screen.getByTestId(dataTestID)).toBeDefined();
     });
   });
 
-  // it('should sort the data', async () => {
-  //   const response = [
-  //     {
-  //       userId: 1,
-  //       id: 1,
-  //       title: 'Title 1',
-  //       body: 'Body 1'
-  //     },
-  //     {
-  //       userId: 2,
-  //       id: 2,
-  //       title: 'Title 2',
-  //       body: 'Body 2'
-  //     },
-  //     {
-  //       userId: 3,
-  //       id: 3,
-  //       title: 'Title 3',
-  //       body: 'Body 3'
-  //     },
-  //     {
-  //       userId: 4,
-  //       id: 4,
-  //       title: 'Title 4',
-  //       body: 'Body 4'
-  //     },
-  //     {
-  //       userId: 5,
-  //       id: 5,
-  //       title: 'Title 5',
-  //       body: 'Body 5'
-  //     }
-  //   ];
-
-  //   vi.spyOn(window, 'fetch')
-  //     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  //     .mockResolvedValue({
-  //       ok: true,
-  //       json: async () => response
-  //     } as Response);
-
-  //   renderWithQuery(<App />);
-
-  //   await waitFor(() => {
-  //     const titleLabel = TABLE_HEADER_LABELS[SortBy.TITLE];
-  //     const titleHeader = screen.getByText(titleLabel);
-  //     expect(titleHeader).toBeDefined();
-
-  //     fireEvent.click(titleHeader);
-  //   });
-
-  //   const tbody = screen.getAllByRole('rowgroup')[1];
-  //   const rows = within(tbody).getAllByRole('row');
-  //   const firstRow = within(rows[0]).getByText(response[0].title);
-  //   expect(firstRow).toBeDefined();
-
-  //   // const firstRow = document.querySelector('tbody > tr:nth-child(1)');
-  //   // if (firstRow) {
-  //   //   expect(within(firstRow).getByText(response[0].title)).toBeDefined();
-  //   // }
-  // });
-
   it('should filter the data by title', async () => {
-    const response = [
-      {
-        userId: 1,
-        id: 1,
-        title: 'Title 1',
-        body: 'Body 1'
-      },
-      {
-        userId: 2,
-        id: 2,
-        title: 'Title 2',
-        body: 'Body 2'
-      },
-      {
-        userId: 3,
-        id: 3,
-        title: 'Title 3',
-        body: 'Body 3'
-      },
-      {
-        userId: 4,
-        id: 4,
-        title: 'Title 4',
-        body: 'Body 4'
-      },
-      {
-        userId: 5,
-        id: 5,
-        title: 'Title 5',
-        body: 'Body 5'
-      }
-    ];
-
-    vi.spyOn(window, 'fetch')
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      .mockResolvedValue({
-        ok: true,
-        json: async () => response
-      } as Response);
-
     renderWithQuery(<App />);
 
     await waitFor(() => {
-      const title = screen.getByText(response[0].title);
+      const title = screen.getByDisplayValue(mockData[0].title);
       expect(title).toBeDefined();
     });
 
-    const filter = screen.getByLabelText(/Filter title/i);
+    const filter = screen.getByLabelText(/Filter by/i);
     expect(filter).toBeDefined();
 
-    fireEvent.change(filter, { target: { value: response[0].title } });
+    fireEvent.change(filter, { target: { value: mockData[0].title } });
 
-    expect(screen.queryByText(response[1].title)).toBeNull();
-    expect(screen.getByText(response[0].title)).toBeDefined();
+    const table = screen.getByTestId(dataTestID);
+
+    await waitFor(() => {
+      expect(within(table).queryByDisplayValue(mockData[1].title)).toBeNull();
+      expect(within(table).getByDisplayValue(mockData[0].title)).toBeDefined();
+    });
+  });
+
+  it('should sort the data', async () => {
+    renderWithQuery(<App />);
+
+    await waitFor(() => {
+      const title = screen.getByDisplayValue(mockData[0].title);
+      expect(title).toBeDefined();
+    });
+
+    const tbody = screen.getAllByRole('rowgroup')[1];
+    const prevRows = within(tbody).getAllByRole('row');
+
+    const select = screen.getByRole('combobox');
+    expect(select).toBeDefined();
+
+    fireEvent.mouseDown(select);
+
+    const option = screen.getByRole('option', {
+      name: TABLE_HEADER_LABELS[SortBy.TITLE]
+    });
+    fireEvent.click(option);
+
+    const currentRows = within(tbody).getAllByRole('row');
+
+    expect(currentRows).not.toEqual(prevRows);
+  });
+
+  it('should reset sort', async () => {
+    renderWithQuery(<App />);
+
+    // Sort
+    const select = screen.getByRole('combobox');
+    fireEvent.mouseDown(select);
+    const option = screen.getByRole('option', {
+      name: TABLE_HEADER_LABELS[SortBy.TITLE]
+    });
+    fireEvent.click(option);
+
+    expect(select.textContent).toBe(TABLE_HEADER_LABELS[SortBy.TITLE]);
+
+    // Reset them
+    const resetButton = screen.getByText(/reset/i);
+    fireEvent.click(resetButton);
+
+    expect(select.textContent).toBe('​');
   });
 });

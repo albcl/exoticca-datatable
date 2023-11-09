@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { Box, Button, InputAdornment } from '@mui/material';
 
-import { InputField } from 'src/components/atoms/InputField/InputField';
+import { InputField } from '@components/atoms/InputField/InputField';
 
 import { SortsSection } from '../../molecules/SortsSection/SortsSection';
 import { type ActionsSectionProps } from './types';
@@ -28,6 +28,7 @@ export function ActionsSection({
   return (
     <Box
       component={'form'}
+      role="form"
       display={'flex'}
       alignItems={'center'}
       justifyContent="space-between"
@@ -53,7 +54,7 @@ export function ActionsSection({
       </Box>
 
       <Button variant="contained" color="info" onClick={resetActions}>
-        Reset!
+        Reset
       </Button>
     </Box>
   );

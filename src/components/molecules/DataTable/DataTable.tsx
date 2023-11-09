@@ -20,7 +20,7 @@ DataTable.Header = function Header({ columns }: HeaderProps) {
     <TableHead>
       <DataTable.Row>
         {columns.map(cell => (
-          <DataTable.Cell key={cell.id}>
+          <DataTable.Cell width={cell.width} key={cell.id}>
             <Typography color={'text.secondary'}>{cell.label}</Typography>
           </DataTable.Cell>
         ))}

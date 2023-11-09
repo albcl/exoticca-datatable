@@ -27,7 +27,9 @@
       "@components/*": ["./src/components/*"],
       "@services/*": ["./src/services/*"],
       "@hooks/*": ["./src/hooks/*"],
-      "@errors/*": ["./src/errors/*"]
+      "@errors/*": ["./src/errors/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@mocks/*": ["./src/__mocks__/*"]
     }
   },
   "include": ["src", ".eslintrc.cjs", "vite.config.ts"],
