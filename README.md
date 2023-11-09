@@ -4,6 +4,10 @@
 
 The goal of the assignment is: table with data that allows showing and filtering entities.
 
+## Deployed in Netlify
+
+https://singular-creponne-c3de03.netlify.app/
+
 ## Features to implement:
 
 - [x] Show data in a table (using https://material-ui.com/ or https://styled-components.com/)
