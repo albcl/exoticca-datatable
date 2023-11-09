@@ -1,37 +1,88 @@
-import { Box, Container, LinearProgress } from '@mui/material';
-import { useQuery } from '@tanstack/react-query';
+import { useMemo, useRef, useState } from 'react';
 
-import { DataTable } from './components/DataTable/DataTable';
-import { getPosts } from './services/getPosts';
+import { Box, Container, LinearProgress } from '@mui/material';
+
+import { Table } from '@components/organisms/Table';
+import { SortBy } from '@components/organisms/Table/constants';
+import { ActionsSection } from 'src/components/organisms/ActionsSection';
+
+import { usePostsData } from './hooks/usePostsData';
+import type { SortChangeHandlerType, SortType } from './types';
+
+const initialStates = {
+  filterTitle: '',
+  sortColumn: {
+    sortBy: SortBy.NONE,
+    sortAsc: true
+  }
+};
 
 function App() {
-  const { isLoading, data = [] } = useQuery({
-    queryKey: ['posts'],
-    queryFn: getPosts
-  });
+  const [filterTitle, setFilterTitle] = useState(initialStates.filterTitle);
+  const [sortColumn, setSortColumn] = useState<SortType>(
+    initialStates.sortColumn
+  );
 
-  const headerLabels = ['ID', 'User ID', 'Title', 'Body'];
+  const { posts, isLoading } = usePostsData();
+
+  const filteredTitle = useMemo(() => {
+    if (posts.length) {
+      return posts.filter(post =>
+        post.title.toLowerCase().includes(filterTitle.toLowerCase())
+      );
+    } else {
+      return posts;
+    }
+  }, [posts, filterTitle]);
+
+  const sortedData = useMemo(() => {
+    const { sortBy } = sortColumn;
+
+    if (sortBy) {
+      return filteredTitle.toSorted((a, b) => {
+        const { sortBy, sortAsc } = sortColumn;
+
+        const [valA, valB] = sortAsc ? [a, b] : [b, a];
+
+        switch (sortBy) {
+          case SortBy.TITLE:
+            return valA.title.localeCompare(valB.title);
+
+          case SortBy.BODY:
+            return valA.body.localeCompare(valB.body);
+
+          case SortBy.USER_ID:
+            return valA.userId > valB.userId ? 1 : -1;
+
+          default:
+            return 1;
+        }
+      });
+    } else {
+      return filteredTitle;
+    }
+  }, [filteredTitle, sortColumn]);
+
+  const handleSortBy: SortChangeHandlerType = (value: SortType) => {
+    setSortColumn(prevState => ({ ...prevState, ...value }));
+  };
+
+  const handleResetActions = () => {
+    setFilterTitle(initialStates.filterTitle);
+    setSortColumn(initialStates.sortColumn);
+  };
 
   return (
     <Container maxWidth="xl" disableGutters>
       <Box p={{ xs: 2, md: 4, lg: 7, xl: 10 }}>
-        {isLoading ? (
-          <LinearProgress />
-        ) : (
-          <DataTable>
-            <DataTable.Header cells={headerLabels} />
-            <DataTable.Body>
-              {data.map(el => (
-                <DataTable.Row key={el.id}>
-                  <DataTable.Cell>{el.id}</DataTable.Cell>
-                  <DataTable.Cell>{el.userId}</DataTable.Cell>
-                  <DataTable.Cell>{el.title}</DataTable.Cell>
-                  <DataTable.Cell>{el.body}</DataTable.Cell>
-                </DataTable.Row>
-              ))}
-            </DataTable.Body>
-          </DataTable>
-        )}
+        <ActionsSection
+          resetActions={handleResetActions}
+          sortColumn={sortColumn}
+          filterBy={filterTitle}
+          onSortChange={handleSortBy}
+          onFilterChange={setFilterTitle}
+        />
+        {isLoading ? <LinearProgress /> : <Table data={sortedData} />}
       </Box>
     </Container>
   );

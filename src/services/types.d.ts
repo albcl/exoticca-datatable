@@ -1,8 +1,8 @@
 export type PostsType = SinglePostType[];
 
-export type SinglePostType = {
+export interface SinglePostType {
   userId: number;
   id: number;
   title: string;
   body: string;
-};
+}

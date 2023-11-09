@@ -9,9 +9,10 @@
   "importOrder": [
     "^(react/(.*)$)|^(react-dom/(.*)$)|^(react$)",
     "<THIRD_PARTY_MODULES>",
-    "^components/(.*)$",
-    "^utils/(.*)$",
-    "^assets/(.*)$",
+    "(^@components/(.*)$)|(^components/(.*)$)|(./components/(.*)$)",
+    "(^@services/(.*)$)|(^services/(.*)$)|(./services/(.*)$)",
+    "(^@utils/(.*)$)|(^utils/(.*)$)|(./utils/(.*)$)",
+    "(^@assets/(.*)$)|(^assets/(.*)$)|(./assets/(.*)$)",
     "^[./]"
   ],
   "importOrderSeparation": true,
